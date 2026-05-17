@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Generate compact Timehash index and query keys for precise business-hours search."
+    />
+    <title>Timehash Explorer</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="Timehash Explorer home">
+        <span class="brand-mark">T</span>
+        <span>Timehash Explorer</span>
+      </a>
+      <nav class="nav" aria-label="Primary navigation">
+        <a href="#tool">Tool</a>
+        <a href="#examples">Examples</a>
+        <a href="#learn">Learn</a>
+        <a href="#source">Source</a>
+      </nav>
+      <a class="github-link" href="https://github.com/naver/timehash">GitHub</a>
+    </header>
+
+    <main id="top">
+      <section id="tool" class="tool-shell" aria-labelledby="tool-title">
+        <div class="tool-main">
+        <div class="tool-heading">
+          <p class="eyebrow">Hierarchical time indexing</p>
+          <h1 id="tool-title">Timehash key generator</h1>
+          <p class="notice">
+            Unofficial demo for the open-source Timehash project. Timehash is
+            copyright NAVER Corp. and licensed under Apache-2.0.
+          </p>
+          <p>
+            Enter a document time range and a query time to generate the index
+            keys stored on a document and the query keys used at search time.
+            </p>
+          </div>
+
+          <form class="generator-grid" id="timehash-form">
+            <section class="generator-panel" aria-labelledby="index-generator-title">
+              <div>
+                <p class="panel-kicker">Document range</p>
+                <h2 id="index-generator-title">Index key generator</h2>
+              </div>
+              <div class="field-row">
+                <label>
+                  <span>Open</span>
+                  <input
+                    id="start-time"
+                    type="text"
+                    inputmode="numeric"
+                    maxlength="5"
+                    pattern="[0-2][0-9]:[0-5][0-9]"
+                    value="11:40"
+                    placeholder="11:40"
+                    required
+                  />
+                </label>
+                <label>
+                  <span>Close</span>
+                  <input
+                    id="end-time"
+                    type="text"
+                    inputmode="numeric"
+                    maxlength="5"
+                    pattern="[0-2][0-9]:[0-5][0-9]"
+                    value="21:00"
+                    placeholder="21:00"
+                    required
+                  />
+                </label>
+              </div>
+              <section class="output-group" aria-labelledby="index-title">
+                <div class="output-title" id="index-title">Index keys</div>
+                <div class="chip-list" id="index-keys"></div>
+              </section>
+            </section>
+
+            <section class="generator-panel" aria-labelledby="query-generator-title">
+              <div>
+                <p class="panel-kicker">Search time</p>
+                <h2 id="query-generator-title">Query key generator</h2>
+              </div>
+              <label>
+                <span>Query</span>
+                <input
+                  id="query-time"
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="5"
+                  pattern="[0-2][0-9]:[0-5][0-9]"
+                  value="14:30"
+                  placeholder="14:30"
+                  required
+                />
+              </label>
+              <section class="output-group" aria-labelledby="query-title">
+                <div class="output-title" id="query-title">Query keys</div>
+                <div class="chip-list query" id="query-keys"></div>
+              </section>
+            </section>
+
+          </form>
+
+          <div class="demo-output" aria-live="polite">
+            <div class="metric-row">
+              <div>
+                <span class="metric-label">Minute index</span>
+                <strong id="minute-count">560</strong>
+              </div>
+              <div>
+                <span class="metric-label">Timehash index</span>
+                <strong id="term-count">5</strong>
+              </div>
+              <div>
+                <span class="metric-label">Reduction</span>
+                <strong id="reduction">99.1%</strong>
+              </div>
+              <div>
+                <span class="metric-label">Match</span>
+                <strong id="match-state">Yes</strong>
+              </div>
+            </div>
+
+            <pre class="code-output" id="code-output"></pre>
+          </div>
+        </div>
+
+        <aside class="tool-side" aria-label="Timehash summary">
+          <section class="side-panel intro-panel">
+            <h2>Find “open now” without minute-level bloat</h2>
+            <p>
+              Timehash decomposes a time range into hierarchical buckets, then
+              matches query-time paths against those buckets.
+            </p>
+            <div class="compact-stat">
+              <strong>46x</strong>
+              <span>fewer terms than 1-minute indexing in the benchmark summary</span>
+            </div>
+          </section>
+
+          <section class="side-panel">
+            <h2>Default levels</h2>
+            <ol class="level-list">
+              <li><span>4h</span>large contiguous blocks</li>
+              <li><span>1h</span>natural business-hour edges</li>
+              <li><span>15m</span>quarter-hour precision</li>
+              <li><span>5m</span>small boundary cleanup</li>
+              <li><span>1m</span>exact edge cases</li>
+            </ol>
+          </section>
+        </aside>
+      </section>
+
+      <section id="examples" class="section examples-section" aria-labelledby="examples-title">
+        <div class="section-heading">
+          <p class="eyebrow">Examples</p>
+          <h2 id="examples-title">Common search patterns</h2>
+        </div>
+        <div class="example-grid">
+          <article>
+            <h3>Restaurants open now</h3>
+            <p>Store each restaurant's hours as Timehash keys, then query with the current local time.</p>
+          </article>
+          <article>
+            <h3>Booking availability</h3>
+            <p>Represent bookable windows compactly while keeping exact time matching semantics.</p>
+          </article>
+          <article>
+            <h3>Shift operations</h3>
+            <p>Filter schedules, teams, or resources without expanding every covered minute.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="learn" class="section learn-section" aria-labelledby="learn-title">
+        <div class="section-heading">
+          <p class="eyebrow">Learn</p>
+          <h2 id="learn-title">How Timehash works</h2>
+        </div>
+        <div class="learn-layout">
+          <div class="timeline-visual" aria-label="11:40 to 21:00 decomposed into five Timehash keys">
+            <span class="segment segment-a">08113040</span>
+            <span class="segment segment-b">081145</span>
+            <span class="segment segment-c">12</span>
+            <span class="segment segment-d">16</span>
+            <span class="segment segment-e">2020</span>
+          </div>
+          <div class="learn-copy">
+            <details open>
+              <summary>Index term generation</summary>
+              <p>
+                Timehash recursively chooses the largest bucket that fits inside
+                the range. Boundaries are refined with smaller buckets.
+              </p>
+            </details>
+            <details>
+              <summary>Query term generation</summary>
+              <p>
+                A query time creates one key per hierarchy level, from coarse
+                buckets to exact minute-level buckets.
+              </p>
+            </details>
+            <details>
+              <summary>Exact matching</summary>
+              <p>
+                A document matches when any query key appears in the document's
+                index keys, giving zero false positives and zero false negatives.
+              </p>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <section id="source" class="section install-section" aria-labelledby="source-title">
+        <div class="section-heading">
+          <p class="eyebrow">Source</p>
+          <h2 id="source-title">Use the same model across language implementations</h2>
+          <p>
+            Package registry distribution is not assumed here. Use the source
+            implementations in the repository until packages are published.
+          </p>
+        </div>
+        <div class="install-grid">
+          <pre><code>javascript/timehash.js</code></pre>
+          <pre><code>python/timehash.py</code></pre>
+          <pre><code>go/timehash.go</code></pre>
+          <pre><code>rust/src/lib.rs</code></pre>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>Apache-2.0</span>
+      <span>C++, Python, Java, Go, JavaScript, Rust, Kotlin, Scala</span>
+    </footer>
+
+    <script src="./javascript/timehash.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
